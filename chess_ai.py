@@ -1,15 +1,16 @@
 class GameState():
 	def __init__(self):
 		self.board = [
-			['bR', 'bN', 'bB', 'bQ', 'bK', 'bB', '--', 'bR'],
-			['bp', 'bp', 'bp', 'bp', 'bp', 'bp', 'wp', 'bp'],
+			['bR', 'bN', 'bB', 'bQ', 'bK', 'bB', 'bN', 'bR'],
+			['bp', 'bp', 'bp', 'bp', 'bp', 'bp', 'bp', 'bp'],
 			['--', '--', '--', '--', '--', '--', '--', '--'],
 			['--', '--', '--', '--', '--', '--', '--', '--'],
 			['--', '--', '--', '--', '--', '--', '--', '--'],
 			['--', '--', '--', '--', '--', '--', '--', '--'],
-			['wp', 'bp', 'wp', 'wp', 'wp', 'wp', 'wp', 'wp'],
-	 		['wR', '--', 'wB', 'wQ', 'wK', 'wB', 'wN', 'wR']]
+			['wp', 'wp', 'wp', 'wp', 'wp', 'wp', 'wp', 'wp'],
+	 		['wR', 'wN', 'wB', 'wQ', 'wK', 'wB', 'wN', 'wR']]
 
+		self.numOfMoves = 0
 		self.whiteToMove = True
 		self.moveLog = []
 
@@ -25,7 +26,7 @@ class GameState():
   
 		self.checkMate = False
 		self.staleMate = False
-  
+
 	def makeMove(self, move):
 		self.board[move.startRow][move.startCol] = '--'  # empty the start cell 
 		self.board[move.endRow][move.endCol] = move.pieceMoved 	# keep the piece moved on the end cell
@@ -39,6 +40,8 @@ class GameState():
 		if self.board[move.endRow][move.endCol][1] == 'p':
 			if move.endRow == 0 or move.endRow == 7:
 				self.board[move.endRow][move.endCol] = move.pieceMoved[0] + 'Q'
+    
+		self.numOfMoves += 1
 		self.whiteToMove = not self.whiteToMove	 # swap the turn
 	
 	def unMakeMove(self):
@@ -53,6 +56,8 @@ class GameState():
 				self.whiteKingLocation = (move.startRow, move.startCol)
 			elif move.pieceMoved == 'bK':
 				self.blackKingLocation = (move.startRow, move.startCol)
+    
+			self.numOfMoves -= 1
 
 	def getPossibleMoves(self):
 		moves = []
@@ -97,13 +102,10 @@ class GameState():
 			moves = self.generateAllMoves()
 		
 		if len(moves) == 0:
-			print("Out of moves!")
 			if self.inCheck:
 				self.checkMate = True
-				print("Checkmate!\n")
 			else:
 				self.staleMate = True
-				print("StaleMate!")
 
 		else:
 			self.checkMate = False

@@ -77,10 +77,12 @@ def main():
                     moveMade = True
                     isMate = False
         if not isMate and not humanToPlay:
-            AI_moves = chessMoves.getRandomMoves(possibleMoves)
-            gs.makeMove(AI_moves)
+            AI_move = chessMoves.findMove(gs, possibleMoves)
+            if AI_move == None:
+                AI_move = chessMoves.getRandomMoves(possibleMoves)
+            gs.makeMove(AI_move)
             moveMade = True    
-        
+
         if moveMade:
             possibleMoves = gs.getPossibleMoves()
             moveMade = False
