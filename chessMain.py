@@ -6,6 +6,7 @@ This is our main driver file. It will be responsible for
 
 import pygame as p
 import chess_ai
+import chessMoves
 
 BOARD_SIZE = 600
 DIMENTION = 8 # 8*8 CHESS BOARD
@@ -39,13 +40,16 @@ def main():
     possibleMoves = gs.getPossibleMoves()
     
     isMate = False
+    humanPlayWhite = False
+    humanPlayBlack = False
     
     while running:
+        humanToPlay = (gs.whiteToMove and humanPlayWhite) or (not gs.whiteToMove and humanPlayBlack)
         for e in p.event.get():
             if e.type == p.QUIT:
                 running = False
             elif e.type == p.MOUSEBUTTONDOWN:
-                if not isMate:
+                if not isMate and humanToPlay:
                     location = p.mouse.get_pos()  
                     col = location[0] // CELL_SIZE
                     row = location[1] // CELL_SIZE
@@ -72,7 +76,11 @@ def main():
                     gs.unMakeMove()
                     moveMade = True
                     isMate = False
-                    
+        if not isMate and not humanToPlay:
+            AI_moves = chessMoves.getRandomMoves(possibleMoves)
+            gs.makeMove(AI_moves)
+            moveMade = True    
+        
         if moveMade:
             possibleMoves = gs.getPossibleMoves()
             moveMade = False
