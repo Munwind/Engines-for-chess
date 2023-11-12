@@ -146,10 +146,11 @@ def getRandomMoves(possibleMoves):
 def findMove(gs, possibleMoves):
     global bestMove
     bestMove = None
-    random.shuffle(possibleMoves)
+    
     if gs.numOfMoves == 0 or gs.numOfMoves == 1:
         bestMove = getRandomMoves(possibleMoves)
     else:
+        orderedMoves = orderMoves(gs, possibleMoves)
         minimax(gs, possibleMoves, MIN_SCORE, MAX_SCORE, DEPTH)
     
     return bestMove
@@ -178,7 +179,29 @@ def minimax(gs, possibleMoves, alpha, beta, currentDepth):
             break
     
     return maxScore
+
+# Order the moves to make alpha beta prunning more efficient
+def orderMoves(gs, possibleMoves):
+    orderedMoves = []
+    captureMoves = []
+    nonCaptureMoves = []
     
+    for move in possibleMoves:
+        if move.pieceCaptured != '--':  
+            captureMoves.append(move)
+        else:
+            nonCaptureMoves.append(move)
+
+    captureMoves.sort(key=lambda move : captureMoveValue(move))
+    
+    orderedMoves.extend(captureMoves)
+    orderedMoves.extend(nonCaptureMoves)
+    
+    return orderedMoves
+    
+def captureMoveValue(move):
+    return pieceScores[move.pieceMoved[1]] - pieceScores[move.pieceCaptured[1]]
+
 def Evaluate(gs):
     if gs.checkMate:
         if gs.whiteToMove:
