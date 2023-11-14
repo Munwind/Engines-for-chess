@@ -1,6 +1,6 @@
 import random
 
-DEPTH = 4
+DEPTH = 5
 MIN_SCORE = -100000
 MAX_SCORE = 100000
 DRAW = 0
@@ -139,8 +139,6 @@ bishopScore = [[-40,-20,-20,-20,-20,-20,-20,-40],
                [-20, 10, 10, 10, 10, 10, 10,-20],
                [-40,-20,-20,-20,-20,-20,-20,-40]]
 
-transposition_table = {}
-
 def getRandomMoves(possibleMoves):
     if len(possibleMoves) > 0:
         return possibleMoves[random.randint(0, len(possibleMoves) - 1)]
@@ -152,9 +150,7 @@ def findMove(gs, possibleMoves):
     if gs.numOfMoves == 0 or gs.numOfMoves == 1:
         bestMove = getRandomMoves(possibleMoves)
     else:
-        orderedMoves = orderMoves(gs, possibleMoves)
-        minimax_with_transposition(gs, possibleMoves, MIN_SCORE, MAX_SCORE, DEPTH)
-    
+        minimax(gs, possibleMoves, MIN_SCORE, MAX_SCORE, DEPTH)
     return bestMove
     
 def minimax(gs, possibleMoves, alpha, beta, currentDepth):
@@ -167,7 +163,8 @@ def minimax(gs, possibleMoves, alpha, beta, currentDepth):
     
     for move in possibleMoves:
         gs.makeMove(move)
-        nextMoves = gs.getPossibleMoves()
+        nextMoves = gs.getPossibleMoves()   
+        nextMoves = orderMoves(gs, nextMoves)        
         score = -minimax(gs, nextMoves, -beta, -alpha, currentDepth - 1)
         
         if score > maxScore:
@@ -204,61 +201,13 @@ def orderMoves(gs, possibleMoves):
 def captureMoveValue(move):
     return pieceScores[move.pieceMoved[1]] - pieceScores[move.pieceCaptured[1]]
 
-def minimax_with_transposition(gs, possibleMoves, alpha, beta, currentDepth):
-    global bestMove
-
-    # Check the transposition table for the current board position
-    boardHash = hash(tuple(map(tuple, gs.board)))
-    if boardHash in transposition_table:
-        entry = transposition_table[boardHash]
-        if entry["depth"] >= currentDepth:
-            if entry["flag"] == "exact":
-                return entry["score"]
-            elif entry["flag"] == "lowerbound":
-                alpha = max(alpha, entry["score"])
-            elif entry["flag"] == "upperbound":
-                beta = min(beta, entry["score"])
-            if alpha >= beta:
-                return entry["score"]
-    
-    if currentDepth == 0:
-        return Evaluate(gs)
-
-    maxScore = MIN_SCORE
-    
-    for move in possibleMoves:
-        gs.makeMove(move)
-        nextMoves = gs.getPossibleMoves()
-        score = -minimax(gs, nextMoves, -beta, -alpha, currentDepth - 1)
-        
-        if score > maxScore:
-            maxScore = score
-            if currentDepth == DEPTH:
-                bestMove = move
-        gs.unMakeMove()
-        if maxScore > alpha:
-            alpha = maxScore
-        if alpha >= beta:
-            break
-
-    # Update the transposition table with the current board position's evaluation
-    if maxScore <= alpha:
-        flag = "upperbound"
-    elif maxScore >= beta:
-        flag = "lowerbound"
-    else:
-        flag = "exact"
-    transposition_table[boardHash] = {"score": maxScore, "depth": currentDepth, "flag": flag}
-
-    return maxScore
-
 def Evaluate(gs):
     if gs.checkMate:
         if gs.whiteToMove:
             return MIN_SCORE
         else:
             return MAX_SCORE
-    if gs.staleMate:
+    if gs.staleMate or gs.isDrawByRepetition():
         return DRAW
     
     score = 0
@@ -271,25 +220,25 @@ def Evaluate(gs):
                 
                 # Solve for the pawn
                 if square == 'wp':
-                    if gs.numOfMoves < 25:
+                    if gs.numOfMoves < 20:
                         piecePositionScore = whitePawnStart[row][col]
                     else:
                         piecePositionScore = whitePawnEnd[row][col]
                 elif square == 'bp':
-                    if gs.numOfMoves < 25:
+                    if gs.numOfMoves < 20:
                         piecePositionScore = blackPawnStart[row][col]
                     else:
                         piecePositionScore = blackPawnEnd[row][col]
                         
                 # Solve for the king
                 elif square == 'wK':
-                    if gs.numOfMoves < 25:
+                    if gs.numOfMoves < 20:
                         piecePositionScore = whiteKingStart[row][col]
                     else:
                         piecePositionScore = whiteKingEnd[row][col]
 
                 elif square == 'bK':
-                    if gs.numOfMoves < 25:
+                    if gs.numOfMoves < 20:
                         piecePositionScore = blackKingStart[row][col]
                     else:
                         piecePositionScore = blackKingEnd[row][col]

@@ -26,7 +26,8 @@ class GameState():
   
 		self.checkMate = False
 		self.staleMate = False
-
+		self.draw = False
+  
 	def makeMove(self, move):
 		self.board[move.startRow][move.startCol] = '--'  # empty the start cell 
 		self.board[move.endRow][move.endCol] = move.pieceMoved 	# keep the piece moved on the end cell
@@ -51,13 +52,20 @@ class GameState():
 			self.board[move.endRow][move.endCol] = move.pieceCaptured
     
 			self.whiteToMove = not self.whiteToMove
-			
 			if move.pieceMoved == 'wK':
 				self.whiteKingLocation = (move.startRow, move.startCol)
 			elif move.pieceMoved == 'bK':
 				self.blackKingLocation = (move.startRow, move.startCol)
     
 			self.numOfMoves -= 1
+
+	def isDrawByRepetition(self):
+		length = len(self.moveLog) - 1
+		if len(self.moveLog) >= 6:
+			if self.moveLog[length] == self.moveLog[length - 4]:
+				if self.moveLog[length - 1] == self.moveLog[length - 5]:
+					return True
+		return False
 
 	def getPossibleMoves(self):
 		moves = []

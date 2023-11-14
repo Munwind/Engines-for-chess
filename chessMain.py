@@ -7,11 +7,12 @@ This is our main driver file. It will be responsible for
 import pygame as p
 import chess_ai
 import chessMoves
+import time
 
 BOARD_SIZE = 600
 DIMENTION = 8 # 8*8 CHESS BOARD
 CELL_SIZE = BOARD_SIZE // DIMENTION
-MAX_FPS = 8
+MAX_FPS = 10
 IMAGES = {}
 DISPLACEMENT = 0
  
@@ -64,6 +65,9 @@ def main():
                             for i in range(len(possibleMoves)):
                                 if move == possibleMoves[i]:
                                     gs.makeMove(move)
+                                    if gs.isDrawByRepetition():
+                                        gs.draw = True
+                                        print("DRAW")
                                     moveMade = True
                                     sqSelected = () 
                                     playerClicks = []
@@ -77,10 +81,16 @@ def main():
                     moveMade = True
                     isMate = False
         if not isMate and not humanToPlay:
+            startTime = time.time()
             AI_move = chessMoves.findMove(gs, possibleMoves)
+            endTime = time.time()
+            executionTime = endTime - startTime
+            print(f"It took {executionTime} to run")
             if AI_move == None:
                 AI_move = chessMoves.getRandomMoves(possibleMoves)
             gs.makeMove(AI_move)
+            if gs.isDrawByRepetition():
+                gs.draw = True
             moveMade = True    
 
         if moveMade:
@@ -99,6 +109,10 @@ def main():
         if gs.staleMate:
             isMate = True
             draw_text(screen, "Draw by stalemate")
+        
+        if gs.draw:
+            isMate = True
+            draw_text(screen, "Draw by repetitions")
             
         clock.tick(MAX_FPS)
         p.display.flip()
