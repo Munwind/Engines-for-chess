@@ -1,6 +1,6 @@
 import random
 
-DEPTH = 5
+DEPTH = 4
 MIN_SCORE = -100000
 MAX_SCORE = 100000
 DRAW = 0
@@ -71,9 +71,9 @@ whiteKingStart = [[-80, -70, -70, -70, -70, -70, -70, -80],
                   [-20, -30, -30, -40, -40, -30, -30, -20],
                   [-10, -20, -20, -20, -20, -20, -20, -10],
                   [ 20,  20,  -5,  -5,  -5,  -5,  20,  20],
-                  [ 20,  30,  10,   0,   0,  10,  30,  20]]
+                  [ 20,  60,  10,   0,   0,  10,  60,  20]]
 
-blackKingStart = [[ 20,  30,  10,   0,   0,  10,  30,  20],
+blackKingStart = [[ 20,  60,  10,   0,   0,  10,  60,  20],
                   [ 20,  20,  -5,  -5,  -5,  -5,  20,  20],
                   [-10, -20, -20, -20, -20, -20, -20, -10],
                   [-20, -30, -30, -40, -40, -30, -30, -20],
@@ -147,6 +147,7 @@ def findMove(gs, possibleMoves):
     global bestMove
     bestMove = None
     
+    print(gs.numOfMoves, len(possibleMoves), sep=" ")
     if gs.numOfMoves == 0 or gs.numOfMoves == 1:
         bestMove = getRandomMoves(possibleMoves)
     else:
@@ -208,7 +209,18 @@ def Evaluate(gs):
         else:
             return MAX_SCORE
     if gs.staleMate or gs.isDrawByRepetition():
-        return DRAW
+        print("Can make a draw")
+        point = getMaterial(gs.board)
+        if point == 0:
+            if gs.whiteToMove:
+                return -100
+            else:
+                return 100
+            
+        if gs.whiteToMove:
+            return point * (-100)
+        else:
+            return point * 100
     
     score = 0
     for row in range(8):
@@ -220,25 +232,25 @@ def Evaluate(gs):
                 
                 # Solve for the pawn
                 if square == 'wp':
-                    if gs.numOfMoves < 20:
+                    if gs.numOfMoves < 45:
                         piecePositionScore = whitePawnStart[row][col]
                     else:
                         piecePositionScore = whitePawnEnd[row][col]
                 elif square == 'bp':
-                    if gs.numOfMoves < 20:
+                    if gs.numOfMoves < 45:
                         piecePositionScore = blackPawnStart[row][col]
                     else:
                         piecePositionScore = blackPawnEnd[row][col]
                         
                 # Solve for the king
                 elif square == 'wK':
-                    if gs.numOfMoves < 20:
+                    if gs.numOfMoves < 45:
                         piecePositionScore = whiteKingStart[row][col]
                     else:
                         piecePositionScore = whiteKingEnd[row][col]
 
                 elif square == 'bK':
-                    if gs.numOfMoves < 20:
+                    if gs.numOfMoves < 45:
                         piecePositionScore = blackKingStart[row][col]
                     else:
                         piecePositionScore = blackKingEnd[row][col]
@@ -274,3 +286,13 @@ def Evaluate(gs):
         score *= -1
         
     return score
+
+def getMaterial(board):
+    score = 0
+    for row in board:
+        for col in row:
+            if col[0] == 'w':
+                score += pieceScores[col[1]]
+            elif col[0] == 'b':
+                score -= pieceScores[col[1]]
+    return score 

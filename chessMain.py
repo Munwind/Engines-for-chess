@@ -12,7 +12,7 @@ import time
 BOARD_SIZE = 600
 DIMENTION = 8 # 8*8 CHESS BOARD
 CELL_SIZE = BOARD_SIZE // DIMENTION
-MAX_FPS = 10
+MAX_FPS = 15
 IMAGES = {}
 DISPLACEMENT = 0
  
@@ -67,7 +67,6 @@ def main():
                                     gs.makeMove(move)
                                     if gs.isDrawByRepetition():
                                         gs.draw = True
-                                        print("DRAW")
                                     moveMade = True
                                     sqSelected = () 
                                     playerClicks = []
