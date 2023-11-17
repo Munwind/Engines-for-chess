@@ -41,8 +41,8 @@ def main():
     possibleMoves = gs.getPossibleMoves()
     
     isMate = False
-    humanPlayWhite = False
-    humanPlayBlack = False
+    humanPlayWhite = True
+    humanPlayBlack = True
     
     while running:
         humanToPlay = (gs.whiteToMove and humanPlayWhite) or (not gs.whiteToMove and humanPlayBlack)
