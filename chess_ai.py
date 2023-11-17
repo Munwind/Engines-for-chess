@@ -3,9 +3,9 @@ class GameState():
 		self.board = [
 			['bR', 'bN', 'bB', 'bQ', 'bK', 'bB', 'bN', 'bR'],
 			['bp', 'bp', 'bp', 'bp', 'bp', 'bp', 'bp', 'bp'],
+			['--', '--', 'bN', '--', '--', '--', '--', '--'],
 			['--', '--', '--', '--', '--', '--', '--', '--'],
-			['--', '--', '--', '--', '--', '--', '--', '--'],
-			['--', '--', '--', '--', '--', '--', '--', '--'],
+			['wQ', '--', '--', '--', '--', '--', '--', '--'],
 			['--', '--', '--', '--', '--', '--', '--', '--'],
 			['wp', 'wp', 'wp', 'wp', 'wp', 'wp', 'wp', 'wp'],
 	 		['wR', 'wN', 'wB', 'wQ', 'wK', 'wB', 'wN', 'wR']]
@@ -59,7 +59,7 @@ class GameState():
 
 		position = self.calculatePosition()
 		self.storePosition.append(position)
-  
+
 		self.numOfMoves += 1
 		self.whiteToMove = not self.whiteToMove
 	
@@ -135,8 +135,9 @@ class GameState():
 		temp = CastleRights(self.currentCastlingRight.wks, self.currentCastlingRight.bks, self.currentCastlingRight.wqs, self.currentCastlingRight.bqs)
 		moves = []
 		self.addPin = True
+		self.pieceToBePinned = []
+		self.isCheckedBy = []
 		self.get_Pins_and_Checks()
-
 		kingRow, kingCol = self.whiteKingLocation if self.whiteToMove else self.blackKingLocation
 		# Handling the case where the king is checked
 		if self.inCheck:
@@ -187,8 +188,6 @@ class GameState():
 
 	def get_Pins_and_Checks(self):
 		self.inCheck = False
-		self.pieceToBePinned = []
-		self.isCheckedBy = []
   
 		directions = ((1, 0), (-1, 0), (0, 1), (0, -1), (1, 1), (1, -1), (-1, 1), (-1, -1))
   
@@ -366,11 +365,7 @@ class GameState():
 		for i in range(len(self.pieceToBePinned) -  1, -1, -1):
 			if self.pieceToBePinned[i][0] == r and self.pieceToBePinned[i][1] == c:
 				isPinned = True
-				pinDirection = (self.pieceToBePinned[i][2], self.pieceToBePinned[i][3])
-				break
-
-		if isPinned:
-			return
+				return
 
 		for i in range(8):
 			rr, cc = r + directions[i][0], c + directions[i][1]
