@@ -1,7 +1,7 @@
 class GameState():
 	def __init__(self):
 		self.board = [
-			['--', 'bN', 'bB', 'bQ', 'bK', 'bB', 'bN', 'bR'],
+			['bR', 'bN', 'bB', 'bQ', 'bK', 'bB', 'bN', 'bR'],
 			['bp', 'bp', 'bp', 'bp', 'bp', 'bp', 'bp', 'bp'],
 			['--', '--', '--', '--', '--', '--', '--', '--'],
 			['--', '--', '--', '--', '--', '--', '--', '--'],
@@ -226,17 +226,17 @@ class GameState():
 				else:
 					break
 			
-		# Special case for the kinghts
-		moves = ((1, 2), (-1, 2), (1, -2), (-1, -2), (2, 1), (2, -1), (-2, -1), (-2, 1))
-		for k in range(8):
-			newRow, newCol = r + moves[i][0], c + moves[i][1]
-			if 0 <= newRow < 8 and 0 <= newCol < 8:
-				if self.board[newRow][newCol][0] != color and self.board[newRow][newCol][1] == 'N':
-					self.inCheck = True
-					if self.addPin:
-						self.isCheckedBy.append((newRow, newCol, moves[k][0], moves[k][1]))
-					break
-  
+			# Special case for the kinghts
+			moves = ((1, 2), (-1, 2), (1, -2), (-1, -2), (2, 1), (2, -1), (-2, -1), (-2, 1))
+			for k in range(8):
+				newRow, newCol = r + moves[i][0], c + moves[i][1]
+				if 0 <= newRow < 8 and 0 <= newCol < 8:
+					if self.board[newRow][newCol][0] != color and self.board[newRow][newCol][1] == 'N':
+						self.inCheck = True
+						if self.addPin:
+							self.isCheckedBy.append((newRow, newCol, moves[k][0], moves[k][1]))
+						break
+	
 	'''
 	If the square (r, c) is attacked return True, False otherwise
  	'''

@@ -209,7 +209,6 @@ def Evaluate(gs):
         else:
             return MAX_SCORE
     if gs.staleMate or gs.isDrawByRepetition():
-        print("Can make a draw")
         point = getMaterial(gs.board)
         if point == 0:
             if gs.whiteToMove:
@@ -218,9 +217,9 @@ def Evaluate(gs):
                 return 100
             
         if gs.whiteToMove:
-            return point * (-100)
+            return point * (-10)
         else:
-            return point * 100
+            return point * 10
     
     score = 0
     for row in range(8):
