@@ -132,10 +132,10 @@ blackRookScore = [[-20,-20,  0, 20, 20,  0,-20,-20],
 # Points for Bishop position
 bishopScore = [[-40,-20,-20,-20,-20,-20,-20,-40],
                [-20, 10, 10, 10, 10, 10, 10,-20],
-               [-20, 10, 20, 30, 30, 20, 10,-20],
+               [-20, 10, 20, 10, 10, 20, 10,-20],
                [-20, 20, 30, 40, 40, 30, 20,-20],
                [-20, 20, 30, 40, 40, 30, 20,-20],
-               [-20, 10, 20, 30, 30, 20, 10,-20],
+               [-20, 10, 20, 10, 10, 20, 10,-20],
                [-20, 10, 10, 10, 10, 10, 10,-20],
                [-40,-20,-20,-20,-20,-20,-20,-40]]
 
@@ -143,42 +143,119 @@ def getRandomMoves(possibleMoves):
     if len(possibleMoves) > 0:
         return possibleMoves[random.randint(0, len(possibleMoves) - 1)]
 
-def findMove(gs, possibleMoves):
-    global bestMove
-    bestMove = None
-    
-    print(gs.numOfMoves, len(possibleMoves), sep=" ")
-    if gs.numOfMoves == 0 or gs.numOfMoves == 1:
-        bestMove = getRandomMoves(possibleMoves)
-    else:
-        minimax(gs, possibleMoves, MIN_SCORE, MAX_SCORE, DEPTH)
-    return bestMove
-    
-def minimax(gs, possibleMoves, alpha, beta, currentDepth):
-    global bestMove
-    
-    if currentDepth == 0:
-        return Evaluate(gs)
+def getTheMove(gs, possibleMoves): # Get the AI move through this
+    check = isEndGame(gs)
+    if check < 0:
+        return getBestMove(gs, possibleMoves)
+    else:  # this is the end game
+        return getMoveLateGame(gs, possibleMoves)
 
+
+def getBestMove(gs, possibleMoves):
+    best_move = None
+    best_eval = MIN_SCORE
+    
+    if gs.numOfMoves < 2:
+        return best_move
+    possibleMoves = orderMoves(gs, possibleMoves)
+    for move in possibleMoves:
+        gs.makeMove(move)
+        newMoves = orderMoves(gs, gs.getPossibleMoves())
+        evalScore = -minimax(gs, newMoves, MIN_SCORE, -best_eval, DEPTH - 1)
+        gs.unMakeMove()
+        
+        if evalScore > best_eval:
+            best_eval = evalScore
+            best_move = move
+            if best_eval == MAX_SCORE:
+                return best_move
+    if best_move is None:
+        print("No good moves")
+    return best_move
+
+def getMoveLateGame(gs, possibleMoves):
+    best_move = None
+    best_eval = MIN_SCORE
+    
+    if gs.numOfMoves < 2:
+        return best_move
+    
+    possibleMoves = orderMoves(gs, possibleMoves)
+    depth = 2
+    while depth <= DEPTH:
+        for move in possibleMoves:
+            gs.makeMove(move)
+            newMoves = orderMoves(gs, gs.getPossibleMoves())
+            evalScore = -minimax(gs, newMoves, MIN_SCORE, -best_eval, depth - 1)
+            gs.unMakeMove()
+            
+            if evalScore == MAX_SCORE:
+                return move
+            
+            if depth == 4:
+                if evalScore > best_eval:
+                    best_eval = evalScore
+                    best_move = move
+                    if best_eval == MAX_SCORE:
+                        return best_move
+        depth += 1
+        
+    return best_move
+
+def minimax(gs, possibleMoves, alpha, beta, currentDepth):
+    if currentDepth == 0:
+        return quiesenceSearch(gs, alpha, beta)
+    
+    if gs.checkMate:
+        return MIN_SCORE
+    elif gs.staleMate or gs.isDrawByRepetition():
+        return 0
+    
     maxScore = MIN_SCORE
     
     for move in possibleMoves:
         gs.makeMove(move)
-        nextMoves = gs.getPossibleMoves()   
-        nextMoves = orderMoves(gs, nextMoves)        
+        nextMoves = gs.getPossibleMoves()
+        nextMoves = orderMoves(gs, nextMoves)
         score = -minimax(gs, nextMoves, -beta, -alpha, currentDepth - 1)
-        
+        gs.unMakeMove()
+
         if score > maxScore:
             maxScore = score
-            if currentDepth == DEPTH:
-                bestMove = move
-        gs.unMakeMove()
-        if maxScore > alpha:
-            alpha = maxScore
+        alpha = max(alpha, maxScore)
         if alpha >= beta:
             break
     
     return maxScore
+        
+
+
+
+def quiesenceSearch(gs, alpha, beta):
+    evaluation = Evaluate(gs)
+    if evaluation >= beta:
+        return beta
+    alpha = max(alpha, evaluation)
+    
+    temp_moves = gs.getPossibleMoves()
+    moves = []
+    
+    for move in temp_moves:
+        if move.pieceCaptured != '--':
+            moves.append(move)
+    
+    moves = orderMoves(gs, moves)
+    
+    for move in moves:
+        gs.makeMove(move)
+        evaluation = -quiesenceSearch(gs, -beta, -alpha)
+        gs.unMakeMove()
+        
+        if evaluation >= beta:
+            return beta
+        alpha = max(alpha, evaluation)
+    
+    return alpha
 
 # Order the moves to make alpha beta prunning more efficient
 def orderMoves(gs, possibleMoves):
@@ -202,12 +279,27 @@ def orderMoves(gs, possibleMoves):
 def captureMoveValue(move):
     return pieceScores[move.pieceMoved[1]] - pieceScores[move.pieceCaptured[1]]
 
+def isEndGame(gs): # return positive => ebd game happens , negative otherwise
+    blackScore = 0
+    whiteScore = 0
+    
+    for row in gs.board:
+        for col in row:
+            if col[0] == 'w':
+                whiteScore += pieceScores[col[1]]
+            elif col[0] == 'b':
+                blackScore += pieceScores[col[1]]
+    
+    totalScore = whiteScore + blackScore
+    return 2500 - totalScore
+
 def Evaluate(gs):
     if gs.checkMate:
         if gs.whiteToMove:
             return MIN_SCORE
         else:
             return MAX_SCORE
+        
     if gs.staleMate or gs.isDrawByRepetition():
         point = getMaterial(gs.board)
         if point == 0:
@@ -217,9 +309,9 @@ def Evaluate(gs):
                 return 100
             
         if gs.whiteToMove:
-            return point * (-10)
+            return point * (-30)
         else:
-            return point * 10
+            return point * 30
     
     score = 0
     for row in range(8):
@@ -231,25 +323,25 @@ def Evaluate(gs):
                 
                 # Solve for the pawn
                 if square == 'wp':
-                    if gs.numOfMoves < 45:
+                    if gs.numOfMoves < 65:
                         piecePositionScore = whitePawnStart[row][col]
                     else:
                         piecePositionScore = whitePawnEnd[row][col]
                 elif square == 'bp':
-                    if gs.numOfMoves < 45:
+                    if gs.numOfMoves < 65:
                         piecePositionScore = blackPawnStart[row][col]
                     else:
                         piecePositionScore = blackPawnEnd[row][col]
                         
                 # Solve for the king
                 elif square == 'wK':
-                    if gs.numOfMoves < 45:
+                    if gs.numOfMoves < 65:
                         piecePositionScore = whiteKingStart[row][col]
                     else:
                         piecePositionScore = whiteKingEnd[row][col]
 
                 elif square == 'bK':
-                    if gs.numOfMoves < 45:
+                    if gs.numOfMoves < 65:
                         piecePositionScore = blackKingStart[row][col]
                     else:
                         piecePositionScore = blackKingEnd[row][col]
@@ -295,3 +387,4 @@ def getMaterial(board):
             elif col[0] == 'b':
                 score -= pieceScores[col[1]]
     return score 
+

@@ -9,7 +9,7 @@ import chess_ai
 import chessMoves
 import time
 
-BOARD_SIZE = 600
+BOARD_SIZE = 550
 DIMENTION = 8 # 8*8 CHESS BOARD
 CELL_SIZE = BOARD_SIZE // DIMENTION
 MAX_FPS = 15
@@ -34,6 +34,7 @@ def main():
     gs = chess_ai.GameState()
     loadImages()
     
+    animationCheck = False
     moveMade = False
     running = True
     sqSelected = ()
@@ -41,8 +42,8 @@ def main():
     possibleMoves = gs.getPossibleMoves()
     
     isMate = False
-    humanPlayWhite = True
-    humanPlayBlack = True
+    humanPlayWhite = False
+    humanPlayBlack = False
     
     while running:
         humanToPlay = (gs.whiteToMove and humanPlayWhite) or (not gs.whiteToMove and humanPlayBlack)
@@ -68,6 +69,7 @@ def main():
                                     if gs.isDrawByRepetition():
                                         gs.draw = True
                                     moveMade = True
+                                    animationCheck = True
                                     sqSelected = () 
                                     playerClicks = []
                                     
@@ -79,9 +81,11 @@ def main():
                     gs.unMakeMove()
                     moveMade = True
                     isMate = False
+                    animationCheck = False
+                    
         if not isMate and not humanToPlay:
             startTime = time.time()
-            AI_move = chessMoves.findMove(gs, possibleMoves)
+            AI_move = chessMoves.getTheMove(gs, possibleMoves)
             endTime = time.time()
             executionTime = endTime - startTime
             print(f"It took {executionTime} to run")
@@ -91,8 +95,12 @@ def main():
             if gs.isDrawByRepetition():
                 gs.draw = True
             moveMade = True    
+            animationCheck = True
 
         if moveMade:
+            if animationCheck:
+                animationCheck = False
+                animate(gs.moveLog[-1], screen, gs.board, clock)
             possibleMoves = gs.getPossibleMoves()
             moveMade = False
             
@@ -125,7 +133,7 @@ def hightlightSquare(screen, gs, possibleMoves, sqSelected):
         r, c = sqSelected
         if (gs.board[r][c][0] == 'w' and gs.whiteToMove) or (gs.board[r][c][0] == 'b' and not gs.whiteToMove):
             s = p.Surface((CELL_SIZE, CELL_SIZE))
-            s.set_alpha(70)  # transperancy value
+            s.set_alpha(70)
             s.fill(p.Color('red'))
             screen.blit(s, (c * CELL_SIZE, r * CELL_SIZE))
             s.fill(p.Color('yellow'))
@@ -145,11 +153,12 @@ def drawGameState(screen, gs, possibleMoves, sqSelected):
 draw the squares on the board
 '''
 def drawBoard(screen):
-	colors = [p.Color('white'), p.Color('gray')]
-	for r in range(DIMENTION):
-		for c in range(DIMENTION):
-			color = colors[(r+c)%2]
-			p.draw.rect(screen, color, p.Rect(CELL_SIZE*c, CELL_SIZE*r , CELL_SIZE, CELL_SIZE))
+    global colors
+    colors = [p.Color('white'), p.Color('gray')]
+    for r in range(DIMENTION):
+        for c in range(DIMENTION):
+            color = colors[(r+c)%2]
+            p.draw.rect(screen, color, p.Rect(CELL_SIZE*c, CELL_SIZE*r , CELL_SIZE, CELL_SIZE))
 
 '''
 draw the pieces on the board using ChessEngine.GameState.board.
@@ -166,6 +175,28 @@ def draw_text(screen ,string):
     textObject = font.render(string, 0, p.Color('Black'))
     textLocation = p.Rect(0, 0, BOARD_SIZE, BOARD_SIZE).move(BOARD_SIZE / 2 - textObject.get_width() / 2, BOARD_SIZE / 2 - textObject.get_height() / 2)
     screen.blit(textObject, textLocation)
+
+def animate(move, screen, board, clock):
+    global colors
+    dR = move.endRow - move.startRow
+    dC = move.endCol - move.startCol
+    framePerSquare = 8
+    
+    frameCount = (abs(dR) + abs(dC)) * framePerSquare
+    for frame in range(frameCount + 1):
+        r, c = (move.startRow + dR * frame/frameCount, move.startCol + dC * frame / frameCount) 
+        drawBoard(screen)
+        drawPieces(screen, board)
+        
+        color = colors[(move.endRow + move.endCol) % 2]
+        endSquare = p.Rect(move.endCol * CELL_SIZE, move.endRow * CELL_SIZE, CELL_SIZE, CELL_SIZE)
+        p.draw.rect(screen, color, endSquare)
+        
+        if move.pieceCaptured != '--':
+            screen.blit(IMAGES[move.pieceCaptured], endSquare)
+        screen.blit(IMAGES[move.pieceMoved], p.Rect(c * CELL_SIZE, r * CELL_SIZE, CELL_SIZE, BOARD_SIZE))
+        p.display.flip()
+        clock.tick(60)
 
 if __name__ == '__main__':
 	main()

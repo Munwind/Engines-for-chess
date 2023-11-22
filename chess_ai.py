@@ -3,14 +3,32 @@ class GameState():
 		self.board = [
 			['bR', 'bN', 'bB', 'bQ', 'bK', 'bB', 'bN', 'bR'],
 			['bp', 'bp', 'bp', 'bp', 'bp', 'bp', 'bp', 'bp'],
-			['--', '--', 'bN', '--', '--', '--', '--', '--'],
 			['--', '--', '--', '--', '--', '--', '--', '--'],
-			['wQ', '--', '--', '--', '--', '--', '--', '--'],
+			['--', '--', '--', '--', '--', '--', '--', '--'],
+			['--', '--', '--', '--', '--', '--', '--', '--'],
 			['--', '--', '--', '--', '--', '--', '--', '--'],
 			['wp', 'wp', 'wp', 'wp', 'wp', 'wp', 'wp', 'wp'],
 	 		['wR', 'wN', 'wB', 'wQ', 'wK', 'wB', 'wN', 'wR']]
+		self.board = [
+			['--', '--', '--', '--', 'bK', '--', '--', '--'],
+			['--', 'bQ', '--', '--', '--', '--', '--', '--'],
+			['--', '--', '--', '--', '--', '--', '--', '--'],
+			['--', '--', '--', '--', '--', '--', '--', '--'],
+			['bQ', '--', '--', '--', '--', '--', '--', '--'],
+			['--', '--', '--', '--', '--', '--', '--', '--'],
+			['--', '--', '--', '--', '--', '--', '--', '--'],
+	 		['--', '--', '--', '--', 'wK', '--', '--', '--']]
+		self.board = [
+			['--', '--', '--', '--', 'bK', '--', '--', '--'],
+			['--', '--', '--', '--', '--', '--', '--', '--'],
+			['--', '--', '--', '--', '--', '--', '--', '--'],
+			['--', '--', '--', '--', '--', '--', '--', '--'],
+			['--', '--', '--', '--', '--', '--', '--', '--'],
+			['--', '--', '--', '--', '--', '--', '--', '--'],
+			['--', '--', '--', '--', '--', '--', '--', '--'],
+	 		['--', '--', '--', 'wQ', 'wK', '--', '--', '--']]
 
-		self.numOfMoves = 0
+		self.numOfMoves = 10
 		self.whiteToMove = True
 		self.moveLog = []
 
@@ -132,12 +150,18 @@ class GameState():
 		return position
 
 	def getPossibleMoves(self):
+		check = False
 		temp = CastleRights(self.currentCastlingRight.wks, self.currentCastlingRight.bks, self.currentCastlingRight.wqs, self.currentCastlingRight.bqs)
 		moves = []
 		self.addPin = True
 		self.pieceToBePinned = []
 		self.isCheckedBy = []
 		self.get_Pins_and_Checks()
+		if not self.inCheck:
+			check = False
+		else:
+			check = True
+   
 		kingRow, kingCol = self.whiteKingLocation if self.whiteToMove else self.blackKingLocation
 		# Handling the case where the king is checked
 		if self.inCheck:
@@ -173,7 +197,8 @@ class GameState():
 			moves = self.generateAllMoves()
 		
 		if len(moves) == 0:
-			if self.inCheck:
+			self.get_Pins_and_Checks
+			if check:
 				self.checkMate = True
 			else:
 				self.staleMate = True
