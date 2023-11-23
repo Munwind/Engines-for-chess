@@ -113,11 +113,11 @@ def main():
             else:
                 draw_text(screen, "White wins by checkmate")
             
-        if gs.staleMate:
+        elif gs.staleMate:
             isMate = True
             draw_text(screen, "Draw by stalemate")
         
-        if gs.draw:
+        elif gs.draw:
             isMate = True
             draw_text(screen, "Draw by repetitions")
             

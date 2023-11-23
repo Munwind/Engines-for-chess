@@ -148,6 +148,7 @@ def getTheMove(gs, possibleMoves): # Get the AI move through this
     if check < 0:
         return getBestMove(gs, possibleMoves)
     else:  # this is the end game
+        print("This is endgame")
         return getMoveLateGame(gs, possibleMoves)
 
 
@@ -177,16 +178,13 @@ def getMoveLateGame(gs, possibleMoves):
     best_move = None
     best_eval = MIN_SCORE
     
-    if gs.numOfMoves < 2:
-        return best_move
-    
     possibleMoves = orderMoves(gs, possibleMoves)
-    depth = 2
+    depth = 1
     while depth <= DEPTH:
         for move in possibleMoves:
             gs.makeMove(move)
             newMoves = orderMoves(gs, gs.getPossibleMoves())
-            evalScore = -minimax(gs, newMoves, MIN_SCORE, -best_eval, depth - 1)
+            evalScore = -minimaxEndGame(gs, newMoves, MIN_SCORE, -best_eval, depth - 1)
             gs.unMakeMove()
             
             if evalScore == MAX_SCORE:
@@ -227,9 +225,31 @@ def minimax(gs, possibleMoves, alpha, beta, currentDepth):
             break
     
     return maxScore
+
+def minimaxEndGame(gs, possibleMoves, alpha, beta, currentDepth):
+    if currentDepth == 0:
+        return evalForEndGame(gs)
+    
+    if gs.checkMate:
+        return MIN_SCORE
+    elif gs.staleMate or gs.isDrawByRepetition():
+        return 0
+    
+    maxScore = MIN_SCORE
+    
+    for move in possibleMoves:
+        gs.makeMove(move)
+        nextMoves = gs.getPossibleMoves()
+        score = -minimaxEndGame(gs, nextMoves, -beta, -alpha, currentDepth - 1)
+        gs.unMakeMove()
         
-
-
+        if score > maxScore:
+            maxScore = score
+        alpha = max(alpha, maxScore)
+        if alpha >= beta:
+            break
+    
+    return maxScore
 
 def quiesenceSearch(gs, alpha, beta):
     evaluation = Evaluate(gs)
@@ -279,6 +299,64 @@ def orderMoves(gs, possibleMoves):
 def captureMoveValue(move):
     return pieceScores[move.pieceMoved[1]] - pieceScores[move.pieceCaptured[1]]
 
+def evalForEndGame(gs):
+    if gs.checkMate:
+        if gs.whiteToMove:
+            return MIN_SCORE
+        else:
+            return MAX_SCORE
+        
+    if gs.staleMate or gs.isDrawByRepetition():
+        point = getMaterial(gs.board)
+        if point == 0:
+            if gs.whiteToMove:
+                return -10
+            else:
+                return 10
+            
+        if gs.whiteToMove:
+            return point
+        else:
+            return point
+        
+    friendlyKingRow = 0
+    friendlyKingCol = 0
+    enemyKingRow = 0
+    enemyKingCol = 0
+    
+    # Store the position of white king and black king as friendlyKing and enemyKing
+    if gs.whiteToMove:
+        friendlyKingRow, friendlyKingCol = gs.whiteKingLocation
+        enemyKingRow, enemyKingCol = gs.blackKingLocation
+    else:
+        friendlyKingRow, friendlyKingCol = gs.blackKingLocation
+        enemyKingRow, enemyKingCol = gs.whiteKingLocation
+    
+    # Start to count the eval value
+    eval = 0
+    
+    # Increase eval if the enemy king is in the corner of the board
+    enemyKingDistanceToCentreRow = max(abs(enemyKingRow - 3), abs(enemyKingRow - 4))
+    enemyKingDistanceToCentreCol = max(abs(enemyKingCol - 3), abs(enemyKingCol - 4)) 
+    enemyKingDistanceToCentre = enemyKingDistanceToCentreRow + enemyKingDistanceToCentreCol
+    
+    eval += enemyKingDistanceToCentre * 30
+    
+    # Increase eval if the friendlyKing is near the enemyKing
+    kingDistanceRow = abs(friendlyKingRow - enemyKingRow)
+    kingDistanceCol = abs(friendlyKingCol - enemyKingCol)
+    totalKingDistance = kingDistanceRow + kingDistanceCol
+    
+    eval += (14 - totalKingDistance) * 30
+    
+    score = getMaterial(gs.board)
+    
+    if not gs.whiteToMove:
+        score *= -1
+    
+    return eval + score
+    
+
 def isEndGame(gs): # return positive => ebd game happens , negative otherwise
     blackScore = 0
     whiteScore = 0
@@ -291,7 +369,7 @@ def isEndGame(gs): # return positive => ebd game happens , negative otherwise
                 blackScore += pieceScores[col[1]]
     
     totalScore = whiteScore + blackScore
-    return 2500 - totalScore
+    return 2300 - totalScore
 
 def Evaluate(gs):
     if gs.checkMate:
@@ -304,14 +382,14 @@ def Evaluate(gs):
         point = getMaterial(gs.board)
         if point == 0:
             if gs.whiteToMove:
-                return -100
+                return -10
             else:
-                return 100
+                return 10
             
         if gs.whiteToMove:
-            return point * (-30)
+            return point
         else:
-            return point * 30
+            return point
     
     score = 0
     for row in range(8):
@@ -387,4 +465,17 @@ def getMaterial(board):
             elif col[0] == 'b':
                 score -= pieceScores[col[1]]
     return score 
+
+def getSideMaterial(board):
+    whiteScore = 0
+    blackScore = 0
+    
+    for row in board:
+        for col in row:
+            if col[0] == 'w':
+                whiteScore += pieceScores[col[1]]
+            elif col[0] == 'b':
+                blackScore += pieceScores[col[1]]
+
+    return whiteScore, blackScore
 
