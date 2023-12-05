@@ -310,9 +310,9 @@ def evalForEndGame(gs):
         point = getMaterial(gs.board)
         if point == 0:
             if gs.whiteToMove:
-                return -10
+                return 0
             else:
-                return 10
+                return 0
             
         if gs.whiteToMove:
             return point
@@ -323,6 +323,7 @@ def evalForEndGame(gs):
     friendlyKingCol = 0
     enemyKingRow = 0
     enemyKingCol = 0
+    endGameWeight = isEndGame(gs)
     
     # Store the position of white king and black king as friendlyKing and enemyKing
     if gs.whiteToMove:
@@ -340,16 +341,16 @@ def evalForEndGame(gs):
     enemyKingDistanceToCentreCol = max(abs(enemyKingCol - 3), abs(enemyKingCol - 4)) 
     enemyKingDistanceToCentre = enemyKingDistanceToCentreRow + enemyKingDistanceToCentreCol
     
-    eval += enemyKingDistanceToCentre * 30
+    eval += enemyKingDistanceToCentre * (endGameWeight // 30)
     
     # Increase eval if the friendlyKing is near the enemyKing
     kingDistanceRow = abs(friendlyKingRow - enemyKingRow)
     kingDistanceCol = abs(friendlyKingCol - enemyKingCol)
     totalKingDistance = kingDistanceRow + kingDistanceCol
     
-    eval += (14 - totalKingDistance) * 30
+    eval += (14 - totalKingDistance) * (endGameWeight // 30)
     
-    score = getMaterial(gs.board)
+    score = scoreForEndGame(gs.board)
     
     if not gs.whiteToMove:
         score *= -1
@@ -466,16 +467,54 @@ def getMaterial(board):
                 score -= pieceScores[col[1]]
     return score 
 
-def getSideMaterial(board):
-    whiteScore = 0
-    blackScore = 0
+def scoreForEndGame(board):
+    score = 0
+    for row in range(8):
+        for col in range(8):
+            square = board[row][col]
+
+            if square != '--':
+                piecePositionScore = 0
+                
+                # Solve for the pawn
+                if square == 'wp':
+                    piecePositionScore = whitePawnEnd[row][col]
+                elif square == 'bp':
+                    piecePositionScore = blackPawnEnd[row][col]
+                        
+                # Solve for the king
+                elif square == 'wK':
+                    piecePositionScore = whiteKingEnd[row][col]
+
+                elif square == 'bK':
+                    piecePositionScore = blackKingEnd[row][col]
+                
+                # Solve for the knight
+                elif square == 'wN':
+                    piecePositionScore = whiteKinghtScore[row][col]
+                
+                elif square == 'bN':
+                    piecePositionScore = blackKinghtScore[row][col]
+                    
+                # Solve for the rook
+                elif square == 'wR':
+                    piecePositionScore = whiteRookScore[row][col]
+                
+                elif square == 'bR':
+                    piecePositionScore = blackRookScore[row][col]
+                
+                # Solve for the queen
+                elif square[1] == 'Q':
+                    piecePositionScore = queenScore[row][col]
+                
+                # Solve for the bishop
+                elif square[1] == 'B':
+                    piecePositionScore = bishopScore[row][col]
+                
+                    
+                if square[0] == 'w':
+                    score += pieceScores[square[1]] + piecePositionScore
+                elif square[0] == 'b':
+                    score -= pieceScores[square[1]] + piecePositionScore
     
-    for row in board:
-        for col in row:
-            if col[0] == 'w':
-                whiteScore += pieceScores[col[1]]
-            elif col[0] == 'b':
-                blackScore += pieceScores[col[1]]
-
-    return whiteScore, blackScore
-
+    return score

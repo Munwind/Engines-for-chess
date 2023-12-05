@@ -12,7 +12,7 @@ import time
 BOARD_SIZE = 550
 DIMENTION = 8 # 8*8 CHESS BOARD
 CELL_SIZE = BOARD_SIZE // DIMENTION
-MAX_FPS = 15
+MAX_FPS = 12
 IMAGES = {}
 DISPLACEMENT = 0
  
@@ -134,7 +134,7 @@ def hightlightSquare(screen, gs, possibleMoves, sqSelected):
         if (gs.board[r][c][0] == 'w' and gs.whiteToMove) or (gs.board[r][c][0] == 'b' and not gs.whiteToMove):
             s = p.Surface((CELL_SIZE, CELL_SIZE))
             s.set_alpha(70)
-            s.fill(p.Color('red'))
+            s.fill(p.Color('blue'))
             screen.blit(s, (c * CELL_SIZE, r * CELL_SIZE))
             s.fill(p.Color('yellow'))
             
@@ -146,6 +146,7 @@ def hightlightSquare(screen, gs, possibleMoves, sqSelected):
 def drawGameState(screen, gs, possibleMoves, sqSelected):
     drawBoard(screen)
     hightlightSquare(screen, gs, possibleMoves, sqSelected)
+    hightlightChecks(screen, gs)
     drawPieces(screen, gs.board)
 
 
@@ -198,5 +199,19 @@ def animate(move, screen, board, clock):
         p.display.flip()
         clock.tick(60)
 
+def hightlightChecks(screen, gs):
+    r, c = -1, -1
+    if gs.whiteToMove:
+        if gs.isAttacked(gs.whiteKingLocation[0], gs.whiteKingLocation[1]):
+            r, c = gs.whiteKingLocation
+    else:
+        if gs.isAttacked(gs.blackKingLocation[0], gs.blackKingLocation[1]):
+            r, c = gs.blackKingLocation
+    
+    if r != -1 and c != -1:
+        s = p.Surface((CELL_SIZE, CELL_SIZE))
+        s.fill(p.Color('red'))
+        screen.blit(s, (c * CELL_SIZE, r * CELL_SIZE))
+        
 if __name__ == '__main__':
 	main()
