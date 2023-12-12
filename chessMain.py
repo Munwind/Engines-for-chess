@@ -43,7 +43,7 @@ def main():
     possibleMoves = gs.getPossibleMoves()
     
     isMate = False
-    humanPlayWhite = False
+    humanPlayWhite = True
     humanPlayBlack = False
     
     while running:
@@ -63,7 +63,7 @@ def main():
                         sqSelected = (row, col)
                         playerClicks.append(sqSelected)  
                         if len(playerClicks) == 2:  
-                            move = chess_ai.Move(playerClicks[0], playerClicks[1], gs.board)
+                            move = chessMoves.Move(playerClicks[0], playerClicks[1], gs.board)
                             for i in range(len(possibleMoves)):
                                 if move == possibleMoves[i]:
                                     gs.makeMove(move)
@@ -131,9 +131,9 @@ responsible for all the graphics in the game
                     
 def drawGameState(screen, gs, possibleMoves, sqSelected):
     drawBoard(screen)
+    displayLastMove(screen, gs)
     hightlightSquare(screen, gs, possibleMoves, sqSelected)
     hightlightChecks(screen, gs)
-    displayLastMove(screen, gs)
     drawPieces(screen, gs.board)
 
 
