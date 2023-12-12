@@ -5,11 +5,11 @@ This is our main driver file. It will be responsible for
 """
 
 import pygame as p
-import chess_ai
+import chessAI
 import chessMoves
 import time
 
-BOARD_SIZE = 550
+BOARD_SIZE = 560
 DIMENTION = 8 # 8*8 CHESS BOARD
 CELL_SIZE = BOARD_SIZE // DIMENTION
 MAX_FPS = 12
@@ -19,6 +19,7 @@ DISPLACEMENT = 0
 '''
 Initialise the global dictionary of images. This will be called exactly once in the main
 '''
+p.display.set_caption("CHESS")
 def loadImages():
 	pieces = ['bp', 'bR', 'bN', 'bB', 'bQ', 'bK', 'wp', 'wR', 'wN', 'wB', 'wQ', 'wK']
 	for piece in pieces:
@@ -31,7 +32,7 @@ def main():
     p.init()
     screen = p.display.set_mode((BOARD_SIZE, BOARD_SIZE))
     clock = p.time.Clock()
-    gs = chess_ai.GameState()
+    gs = chessMoves.GameState()
     loadImages()
     
     animationCheck = False
@@ -85,12 +86,12 @@ def main():
                     
         if not isMate and not humanToPlay:
             startTime = time.time()
-            AI_move = chessMoves.getTheMove(gs, possibleMoves)
+            AI_move = chessAI.getTheMove(gs, possibleMoves)
             endTime = time.time()
             executionTime = endTime - startTime
             print(f"It took {executionTime} to run")
             if AI_move == None:
-                AI_move = chessMoves.getRandomMoves(possibleMoves)
+                AI_move = chessAI.getRandomMoves(possibleMoves)
             gs.makeMove(AI_move)
             if gs.isDrawByRepetition():
                 gs.draw = True
@@ -127,26 +128,12 @@ def main():
 '''
 responsible for all the graphics in the game
 '''
-
-def hightlightSquare(screen, gs, possibleMoves, sqSelected):
-    if sqSelected != ():
-        r, c = sqSelected
-        if (gs.board[r][c][0] == 'w' and gs.whiteToMove) or (gs.board[r][c][0] == 'b' and not gs.whiteToMove):
-            s = p.Surface((CELL_SIZE, CELL_SIZE))
-            s.set_alpha(70)
-            s.fill(p.Color('blue'))
-            screen.blit(s, (c * CELL_SIZE, r * CELL_SIZE))
-            s.fill(p.Color('yellow'))
-            
-            for move in possibleMoves:
-                if move.startRow == r and move.startCol == c:
-                    screen.blit(s, (CELL_SIZE * move.endCol, CELL_SIZE * move.endRow))
-
                     
 def drawGameState(screen, gs, possibleMoves, sqSelected):
     drawBoard(screen)
     hightlightSquare(screen, gs, possibleMoves, sqSelected)
     hightlightChecks(screen, gs)
+    displayLastMove(screen, gs)
     drawPieces(screen, gs.board)
 
 
@@ -199,6 +186,21 @@ def animate(move, screen, board, clock):
         p.display.flip()
         clock.tick(60)
 
+
+def hightlightSquare(screen, gs, possibleMoves, sqSelected):
+    if sqSelected != ():
+        r, c = sqSelected
+        if (gs.board[r][c][0] == 'w' and gs.whiteToMove) or (gs.board[r][c][0] == 'b' and not gs.whiteToMove):
+            s = p.Surface((CELL_SIZE, CELL_SIZE))
+            s.set_alpha(70)
+            s.fill(p.Color('blue'))
+            screen.blit(s, (c * CELL_SIZE, r * CELL_SIZE))
+            s.fill(p.Color('green'))
+            
+            for move in possibleMoves:
+                if move.startRow == r and move.startCol == c:
+                    screen.blit(s, (CELL_SIZE * move.endCol, CELL_SIZE * move.endRow))
+                    
 def hightlightChecks(screen, gs):
     r, c = -1, -1
     if gs.whiteToMove:
@@ -212,6 +214,20 @@ def hightlightChecks(screen, gs):
         s = p.Surface((CELL_SIZE, CELL_SIZE))
         s.fill(p.Color('red'))
         screen.blit(s, (c * CELL_SIZE, r * CELL_SIZE))
+
+def displayLastMove(screen, gs):
+    if len(gs.moveLog) != 0:
+        startRow = gs.moveLog[-1].startRow
+        startCol = gs.moveLog[-1].startCol
+        endRow = gs.moveLog[-1].endRow
+        endCol = gs.moveLog[-1].endCol
+        
+        s = p.Surface((CELL_SIZE, CELL_SIZE))
+        s.fill(p.Color('light yellow'))
+        screen.blit(s, (startCol * CELL_SIZE, startRow * CELL_SIZE))
+        
+        s.fill(p.Color('yellow'))
+        screen.blit(s, (endCol * CELL_SIZE, endRow * CELL_SIZE))
         
 if __name__ == '__main__':
 	main()
