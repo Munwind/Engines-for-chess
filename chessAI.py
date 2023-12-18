@@ -323,7 +323,7 @@ def evalForEndGame(gs):
     friendlyKingCol = 0
     enemyKingRow = 0
     enemyKingCol = 0
-    endGameWeight = isEndGame(gs) // 6
+    endGameWeight = isEndGame(gs) // 2
     
     # Store the position of white king and black king as friendlyKing and enemyKing
     if gs.whiteToMove:

@@ -9,17 +9,8 @@ class GameState():
 			['--', '--', '--', '--', '--', '--', '--', '--'],
 			['wp', 'wp', 'wp', 'wp', 'wp', 'wp', 'wp', 'wp'],
 	 		['wR', 'wN', 'wB', 'wQ', 'wK', 'wB', 'wN', 'wR']]
-		'''self.board = [
-			['--', '--', '--', '--', 'bK', '--', '--', '--'],
-			['--', '--', '--', '--', 'bN', '--', '--', '--'],
-			['--', '--', '--', '--', '--', '--', '--', '--'],
-			['--', '--', '--', '--', '--', '--', '--', '--'],
-			['--', '--', '--', '--', '--', '--', '--', '--'],
-			['--', '--', '--', '--', '--', '--', '--', '--'],
-			['--', '--', '--', '--', '--', 'wR', 'wR', '--'],
-	 		['--', '--', '--', '--', 'wK', '--', '--', '--']]'''
 
-		self.numOfMoves = 2
+		self.numOfMoves = 0
 		self.whiteToMove = True
 		self.moveLog = []
 
@@ -38,7 +29,6 @@ class GameState():
 		self.draw = False
 
 		self.currentCastlingRight = CastleRights(True, True, True, True)
-		#self.currentCastlingRight = CastleRights(False, False, False, False)
 		self.castleRightLog = [CastleRights(self.currentCastlingRight.wks, self.currentCastlingRight.bks, self.currentCastlingRight.wqs, self.currentCastlingRight.bqs)]
 		self.storePosition = []
   

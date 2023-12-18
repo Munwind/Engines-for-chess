@@ -1,0 +1,1 @@
+To run this code, you have to install pygame first. If pygame is not installed, you can install by run this code: "pip install pygame"

@@ -43,7 +43,7 @@ def main():
     possibleMoves = gs.getPossibleMoves()
     
     isMate = False
-    humanPlayWhite = True
+    humanPlayWhite = False
     humanPlayBlack = False
     
     while running:
