@@ -293,7 +293,7 @@ def orderMoves(gs, possibleMoves):
     
     orderedMoves.extend(captureMoves)
     orderedMoves.extend(nonCaptureMoves)
-    
+
     return orderedMoves
     
 def captureMoveValue(move):
@@ -323,7 +323,7 @@ def evalForEndGame(gs):
     friendlyKingCol = 0
     enemyKingRow = 0
     enemyKingCol = 0
-    endGameWeight = isEndGame(gs) // 2
+    endGameWeight = isEndGame(gs) // 3
     
     # Store the position of white king and black king as friendlyKing and enemyKing
     if gs.whiteToMove:

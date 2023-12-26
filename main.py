@@ -1,9 +1,3 @@
-"""
-This is our main driver file. It will be responsible for 
-	- handling user input
-	- displaying current GameState object
-"""
-
 import pygame as p
 import chessAI
 import chessMoves
@@ -15,19 +9,16 @@ CELL_SIZE = BOARD_SIZE // DIMENTION
 MAX_FPS = 12
 IMAGES = {}
 DISPLACEMENT = 0
- 
-'''
-Initialise the global dictionary of images. This will be called exactly once in the main
-'''
+
+
 p.display.set_caption("CHESS")
 def loadImages():
 	pieces = ['bp', 'bR', 'bN', 'bB', 'bQ', 'bK', 'wp', 'wR', 'wN', 'wB', 'wQ', 'wK']
 	for piece in pieces:
+        # Make sure you have a correct path to the images folder
 		IMAGES[piece] = p.transform.scale(p.image.load("Engines-for-chess/images/" + piece + ".png"), (CELL_SIZE, CELL_SIZE ) )  
 
-'''
-This will be out main driver. It will handle user input and update the graphics.
-'''
+
 def main():
     p.init()
     screen = p.display.set_mode((BOARD_SIZE, BOARD_SIZE))
