@@ -25,7 +25,9 @@ In this project, algorithms that we used for optimizing our engines
 You can install the required library by using the command below in the Command Prompt
 
 `git clone https://github.com/Munwind/Engines-for-chess.git`
+
 `pip install -q -r requirement.txt`
+
 `python main.py`
 
 ## Note
