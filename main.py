@@ -16,7 +16,7 @@ def loadImages():
 	pieces = ['bp', 'bR', 'bN', 'bB', 'bQ', 'bK', 'wp', 'wR', 'wN', 'wB', 'wQ', 'wK']
 	for piece in pieces:
         # Make sure you have a correct path to the images folder
-		IMAGES[piece] = p.transform.scale(p.image.load("Engines-for-chess/images/" + piece + ".png"), (CELL_SIZE, CELL_SIZE ) )  
+		IMAGES[piece] = p.transform.scale(p.image.load("images/" + piece + ".png"), (CELL_SIZE, CELL_SIZE ) )
 
 
 def main():
